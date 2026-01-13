@@ -12,7 +12,6 @@ def serialize_embedding(embedding: List[float]) -> bytes:
 def find_similar_items(
     embedding: List[float],
     limit: int = 5,
-    category: Optional[str] = None,
     threshold: Optional[float] = 0.3
 ) -> List[MatchResult]:
     """
@@ -22,9 +21,8 @@ def find_similar_items(
     results by item_id to return unique clothing items.
 
     Args:
-        embedding: 1408-dimensional embedding vector
+        embedding: 2048-dimensional embedding vector
         limit: Maximum number of unique items to return
-        category: Optional category filter (e.g., 'top', 'bottom')
         threshold: Maximum cosine distance threshold (lower = more similar).
                    If None, returns all matches without filtering.
 
@@ -45,7 +43,6 @@ def find_similar_items(
                 e.image_id,
                 i.item_id,
                 c.name,
-                c.category,
                 c.thumbnail_path,
                 e.distance,
                 ROW_NUMBER() OVER (PARTITION BY i.item_id ORDER BY e.distance ASC) as rn
@@ -54,20 +51,13 @@ def find_similar_items(
             JOIN clothing_items c ON i.item_id = c.item_id
             WHERE e.embedding MATCH ?
               AND k = 20
-    """
-
-    params = [embedding_bytes]
-
-    if category:
-        query += " AND c.category = ?"
-        params.append(category)
-
-    query += """
         )
-        SELECT image_id, item_id, name, category, thumbnail_path, distance
+        SELECT image_id, item_id, name, thumbnail_path, distance
         FROM ranked_matches
         WHERE rn = 1
     """
+
+    params = [embedding_bytes]
 
     if threshold is not None:
         query += " AND distance < ?"
@@ -85,7 +75,7 @@ def find_similar_items(
 
     # Debug logging
     print(f"DEBUG: Similarity search query returned {len(rows)} rows")
-    print(f"DEBUG: Category filter: {category}, Threshold: {threshold}, Limit: {limit}")
+    print(f"DEBUG: Threshold: {threshold}, Limit: {limit}")
     if rows:
         print(f"DEBUG: First match distance: {rows[0]['distance']}")
 
@@ -101,7 +91,6 @@ def find_similar_items(
             image_id=row['image_id'],
             item_id=row['item_id'],
             name=row['name'],
-            category=row['category'],
             similarity=round(similarity, 1),
             thumbnail_path=row['thumbnail_path']
         ))

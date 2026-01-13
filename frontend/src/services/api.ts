@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { ClothingItem, MatchResult, CroppedItem } from '../types/index.js';
+import type { ClothingItem, MatchResult, CroppedItem, ItemImage } from '../types/index.js';
 
 const API_BASE_URL = 'http://localhost:8000';
 
@@ -28,15 +28,34 @@ export const processCrops = async (crops: CroppedItem[]): Promise<MatchResult[][
   return response.data.matches;
 };
 
+/**
+ * Create a new item from crop (upload flow) - logs first wear.
+ * wear_count = 1, last_worn = now
+ */
 export const createItem = async (
   name: string,
-  category: string,
   imageData: string
 ): Promise<ClothingItem> => {
   const response = await api.post('/api/items/create', {
     name,
-    category,
     image_data: imageData,
+  });
+  return response.data;
+};
+
+/**
+ * Create a new item manually (wardrobe add flow) - no wear logged.
+ * wear_count = 0, last_worn = null
+ */
+export const createItemManual = async (
+  name: string,
+  imageData?: string,
+  thumbnailImageData?: string
+): Promise<ClothingItem> => {
+  const response = await api.post('/api/items', {
+    name,
+    image_data: imageData,
+    thumbnail_image_data: thumbnailImageData,
   });
   return response.data;
 };
@@ -55,7 +74,7 @@ export const getAllItems = async (): Promise<ClothingItem[]> => {
   return response.data;
 };
 
-export const getItem = async (itemId: string): Promise<ClothingItem> => {
+export const getItem = async (itemId: string): Promise<{ item: ClothingItem; images: ItemImage[] }> => {
   const response = await api.get(`/api/items/${itemId}`);
   return response.data;
 };
@@ -64,10 +83,37 @@ export const getItemThumbnail = (itemId: string): string => {
   return `${API_BASE_URL}/api/items/${itemId}/thumbnail`;
 };
 
+export const getItemImage = (itemId: string, imageId: string): string => {
+  return `${API_BASE_URL}/api/items/${itemId}/images/${imageId}`;
+};
+
 export const updateItem = async (
   itemId: string,
-  updates: { name?: string; category?: string }
+  updates: { name?: string }
 ): Promise<ClothingItem> => {
   const response = await api.put(`/api/items/${itemId}`, updates);
+  return response.data;
+};
+
+export const deleteItem = async (itemId: string): Promise<void> => {
+  await api.delete(`/api/items/${itemId}`);
+};
+
+/**
+ * Update the thumbnail for an item.
+ * Options:
+ * - imageId: Pick from existing reference images
+ * - imageData: Upload a custom thumbnail
+ * - clear: Revert to default (first reference image)
+ */
+export const updateThumbnail = async (
+  itemId: string,
+  options: { imageId?: string; imageData?: string; clear?: boolean }
+): Promise<{ success: boolean; thumbnail_path: string | null }> => {
+  const response = await api.put(`/api/items/${itemId}/thumbnail`, {
+    image_id: options.imageId,
+    image_data: options.imageData,
+    clear: options.clear,
+  });
   return response.data;
 };

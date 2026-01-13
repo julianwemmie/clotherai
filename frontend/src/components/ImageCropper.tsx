@@ -12,8 +12,6 @@ interface PendingCrop {
   boundingBox: { x: number; y: number; width: number; height: number };
 }
 
-const CATEGORIES = ['top', 'bottom', 'outerwear', 'shoes', 'accessory', 'dress'];
-
 function ImageCropper({ imageUrl, onCropsComplete, onCancel }: ImageCropperProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
@@ -22,7 +20,6 @@ function ImageCropper({ imageUrl, onCropsComplete, onCancel }: ImageCropperProps
   const startPosRef = useRef({ x: 0, y: 0 });
   const [crops, setCrops] = useState<CroppedItem[]>([]);
   const [pendingCrop, setPendingCrop] = useState<PendingCrop | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string>('top');
 
   const getRelativeCoordinates = useCallback((e: React.MouseEvent | MouseEvent) => {
     const img = imageRef.current;
@@ -146,13 +143,11 @@ function ImageCropper({ imageUrl, onCropsComplete, onCancel }: ImageCropperProps
 
     const newCrop: CroppedItem = {
       imageData: pendingCrop.imageData,
-      category: selectedCategory,
       boundingBox: pendingCrop.boundingBox,
     };
 
     setCrops([...crops, newCrop]);
     setPendingCrop(null);
-    setSelectedCategory('top');
   };
 
   const handleRemoveCrop = (index: number) => {
@@ -188,7 +183,6 @@ function ImageCropper({ imageUrl, onCropsComplete, onCancel }: ImageCropperProps
       <h2>Select Clothing Items</h2>
       <p className="instructions">
         Click and drag to select each clothing item in your outfit photo.
-        After selecting, choose the category for each item.
       </p>
 
       <div className="cropper-container">
@@ -216,7 +210,7 @@ function ImageCropper({ imageUrl, onCropsComplete, onCancel }: ImageCropperProps
                 className="crop-overlay existing"
                 style={getCropStyle(crop)}
               >
-                <span className="crop-label">{index + 1}. {crop.category}</span>
+                <span className="crop-label">Item {index + 1}</span>
               </div>
             ))}
 
@@ -241,7 +235,7 @@ function ImageCropper({ imageUrl, onCropsComplete, onCancel }: ImageCropperProps
               <div key={index} className="crop-item">
                 <img src={crop.imageData} alt={`Crop ${index + 1}`} />
                 <div className="crop-info">
-                  <span className="crop-category">{crop.category}</span>
+                  <span className="crop-category">Item {index + 1}</span>
                   <button
                     className="remove-crop"
                     onClick={() => handleRemoveCrop(index)}
@@ -265,24 +259,16 @@ function ImageCropper({ imageUrl, onCropsComplete, onCancel }: ImageCropperProps
         </div>
       </div>
 
-      {/* Category selection modal */}
+      {/* Confirm crop modal (simplified - no category selection) */}
       {pendingCrop && (
         <div className="category-modal-overlay">
           <div className="category-modal">
-            <h3>Select Category</h3>
+            <h3>Add Item</h3>
             <img src={pendingCrop.imageData} alt="Selected crop" className="pending-crop-preview" />
 
-            <div className="category-buttons">
-              {CATEGORIES.map((cat) => (
-                <button
-                  key={cat}
-                  className={`category-button ${selectedCategory === cat ? 'selected' : ''}`}
-                  onClick={() => setSelectedCategory(cat)}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
+            <p className="modal-description">
+              Add this selection as Item {crops.length + 1}?
+            </p>
 
             <div className="modal-actions">
               <button className="add-crop-button" onClick={handleAddCrop}>

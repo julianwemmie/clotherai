@@ -8,28 +8,15 @@ interface MatchResultsProps {
   onComplete: () => void;
 }
 
-interface NewItemForm {
-  name: string;
-  category: string;
-}
-
 function MatchResults({ crops, matches, onComplete }: MatchResultsProps) {
   const [currentCropIndex, setCurrentCropIndex] = useState(0);
   const [processing, setProcessing] = useState(false);
   const [showNewItemForm, setShowNewItemForm] = useState(false);
-  const [newItemForm, setNewItemForm] = useState<NewItemForm>({ name: '', category: '' });
+  const [newItemName, setNewItemName] = useState('');
   const [completedCrops, setCompletedCrops] = useState<Set<number>>(new Set());
 
   const currentCrop = crops[currentCropIndex];
   const currentMatches = matches[currentCropIndex] || [];
-
-  // Debug logging
-  console.log('MatchResults Debug:', {
-    currentCropIndex,
-    totalMatches: matches.length,
-    currentMatches: currentMatches,
-    currentMatchesLength: currentMatches.length
-  });
 
   const handleConfirmMatch = async (match: MatchResult) => {
     setProcessing(true);
@@ -45,26 +32,19 @@ function MatchResults({ crops, matches, onComplete }: MatchResultsProps) {
   };
 
   const handleNewItem = () => {
-    setNewItemForm({
-      name: '',
-      category: currentCrop.category,
-    });
+    setNewItemName('');
     setShowNewItemForm(true);
   };
 
   const handleCreateItem = async () => {
-    if (!newItemForm.name.trim()) {
+    if (!newItemName.trim()) {
       alert('Please enter a name for the item');
       return;
     }
 
     setProcessing(true);
     try {
-      await createItem(
-        newItemForm.name,
-        newItemForm.category || currentCrop.category,
-        currentCrop.imageData
-      );
+      await createItem(newItemName, currentCrop.imageData);
       setShowNewItemForm(false);
       markCropComplete();
     } catch (error) {
@@ -126,21 +106,20 @@ function MatchResults({ crops, matches, onComplete }: MatchResultsProps) {
         <div className="crop-preview">
           <h3>Your Selection</h3>
           <img src={currentCrop.imageData} alt="Selected crop" />
-          <p className="crop-category">{currentCrop.category}</p>
         </div>
 
         {/* Matches list */}
         <div className="matches-list">
           <h3>
             {currentMatches.length > 0
-              ? `All Matches (${currentMatches.length}) - DEBUG MODE`
+              ? `Matches (${currentMatches.length})`
               : 'No matches found - create as new item'}
           </h3>
 
           {currentMatches.length > 0 ? (
             <>
               <div className="debug-info">
-                <p>Showing all wardrobe items sorted by similarity</p>
+                <p>Select a match or create a new item</p>
                 <p className="debug-legend">
                   <span className="legend-item"><span className="color-box high"></span>70%+ = High match</span>
                   <span className="legend-item"><span className="color-box medium"></span>50-70% = Medium</span>
@@ -164,7 +143,6 @@ function MatchResults({ crops, matches, onComplete }: MatchResultsProps) {
                       />
                       <div className="match-info">
                         <h4>{match.name}</h4>
-                        <p className="match-category">{match.category}</p>
                         <p className="match-similarity">
                           <strong>{match.similarity.toFixed(1)}%</strong> similarity
                         </p>
@@ -211,8 +189,30 @@ function MatchResults({ crops, matches, onComplete }: MatchResultsProps) {
 
       {/* New item form modal */}
       {showNewItemForm && (
-        <div className="modal-overlay">
+        <div
+          className="modal-overlay"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !processing) {
+              setShowNewItemForm(false);
+              setNewItemName('');
+            }
+          }}
+        >
           <div className="new-item-modal">
+            <button
+              className="modal-close-x"
+              onClick={() => {
+                setShowNewItemForm(false);
+                setNewItemName('');
+              }}
+              disabled={processing}
+              aria-label="Close"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
             <h3>Create New Item</h3>
 
             <img
@@ -226,31 +226,11 @@ function MatchResults({ crops, matches, onComplete }: MatchResultsProps) {
               <input
                 id="item-name"
                 type="text"
-                value={newItemForm.name}
-                onChange={(e) =>
-                  setNewItemForm({ ...newItemForm, name: e.target.value })
-                }
+                value={newItemName}
+                onChange={(e) => setNewItemName(e.target.value)}
                 placeholder="e.g., Blue T-shirt"
                 autoFocus
               />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="item-category">Category</label>
-              <select
-                id="item-category"
-                value={newItemForm.category}
-                onChange={(e) =>
-                  setNewItemForm({ ...newItemForm, category: e.target.value })
-                }
-              >
-                <option value="top">Top</option>
-                <option value="bottom">Bottom</option>
-                <option value="outerwear">Outerwear</option>
-                <option value="shoes">Shoes</option>
-                <option value="accessory">Accessory</option>
-                <option value="dress">Dress</option>
-              </select>
             </div>
 
             <div className="modal-actions">

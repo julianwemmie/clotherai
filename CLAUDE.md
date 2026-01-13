@@ -4,8 +4,7 @@
 
 **ALWAYS read these files first before beginning any work:**
 
-1. **[plan.md](plan.md)** - Review the overall project plan and current stage requirements
-2. **[PROGRESS.md](PROGRESS.md)** - Check what's been completed and what's in progress
+1. **[README.md](README.md)** - Review the project README
 
 ## Testing Resources
 
@@ -14,6 +13,7 @@
 ## Environment Configuration
 
 - **UV Package Manager**: The `uv` command is located at `/Users/julia/.local/bin/uv`. Always use the full path when running uv commands since `.local/bin` is not in the non-interactive shell PATH.
+- **Check running processes first**: Before starting frontend or backend, verify they aren't already running. Only start them if needed.
 
 ## After Completing Work
 

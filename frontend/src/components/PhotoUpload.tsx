@@ -10,8 +10,6 @@ type Stage = 'upload' | 'crop' | 'match';
 function PhotoUpload() {
   const navigate = useNavigate();
   const [stage, setStage] = useState<Stage>('upload');
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,14 +36,12 @@ function PhotoUpload() {
     }
 
     setError(null);
-    setSelectedFile(file);
     setUploading(true);
 
     // Read file and immediately transition to crop stage
     const reader = new FileReader();
     reader.onloadend = async () => {
       const previewUrl = reader.result as string;
-      setPreview(previewUrl);
 
       try {
         await uploadPhoto(file);
@@ -117,8 +113,6 @@ function PhotoUpload() {
 
   const handleReset = () => {
     setStage('upload');
-    setSelectedFile(null);
-    setPreview(null);
     setUploadedImageUrl(null);
     setCrops([]);
     setMatches([]);

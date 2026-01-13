@@ -6,7 +6,6 @@ from datetime import datetime
 class ClothingItem(BaseModel):
     item_id: str
     name: str
-    category: str
     created_at: datetime
     last_worn: Optional[datetime] = None
     wear_count: int = 0
@@ -21,9 +20,10 @@ class ItemImage(BaseModel):
 
 
 class CreateItemRequest(BaseModel):
+    """Request for manual item creation (wear_count=0, no wear log)."""
     name: str
-    category: str
-    image_data: str
+    image_data: Optional[str] = None
+    thumbnail_image_data: Optional[str] = None
 
 
 class LogWearRequest(BaseModel):
@@ -34,14 +34,12 @@ class MatchResult(BaseModel):
     image_id: str
     item_id: str
     name: str
-    category: str
     similarity: float
     thumbnail_path: Optional[str] = None
 
 
 class CroppedItem(BaseModel):
     imageData: str
-    category: str
     boundingBox: dict
 
 
@@ -51,4 +49,10 @@ class ProcessCropsRequest(BaseModel):
 
 class UpdateItemRequest(BaseModel):
     name: Optional[str] = None
-    category: Optional[str] = None
+
+
+class UpdateThumbnailRequest(BaseModel):
+    """Request to update item thumbnail."""
+    image_id: Optional[str] = None  # Pick from existing item_images
+    image_data: Optional[str] = None  # Upload custom thumbnail
+    clear: Optional[bool] = None  # Revert to default behavior
