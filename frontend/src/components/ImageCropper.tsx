@@ -275,14 +275,14 @@ function ImageCropper({ imageUrl, onCropsComplete, onCancel }: ImageCropperProps
             </p>
 
             <div className="mt-6 flex gap-3">
-              <button className="flex-1 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5" onClick={handleAddCrop}>
-                Add Item
-              </button>
               <button
                 className="flex-1 rounded-xl bg-gray-100 px-4 py-3 text-sm font-semibold text-gray-600 transition hover:bg-gray-200"
                 onClick={() => setPendingCrop(null)}
               >
                 Cancel
+              </button>
+              <button className="flex-1 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5" onClick={handleAddCrop}>
+                Add Item
               </button>
             </div>
           </div>

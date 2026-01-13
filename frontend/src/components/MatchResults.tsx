@@ -248,18 +248,18 @@ function MatchResults({ crops, matches, onComplete }: MatchResultsProps) {
 
             <div className="mt-6 flex gap-3">
               <button
-                className="flex-1 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:from-gray-300 disabled:to-gray-300 disabled:shadow-none disabled:translate-y-0"
-                onClick={handleCreateItem}
-                disabled={processing}
-              >
-                {processing ? 'Creating...' : 'Create Item'}
-              </button>
-              <button
                 className="flex-1 rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed"
                 onClick={() => setShowNewItemForm(false)}
                 disabled={processing}
               >
                 Cancel
+              </button>
+              <button
+                className="flex-1 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:from-gray-300 disabled:to-gray-300 disabled:shadow-none disabled:translate-y-0"
+                onClick={handleCreateItem}
+                disabled={processing}
+              >
+                {processing ? 'Creating...' : 'Create Item'}
               </button>
             </div>
           </div>
