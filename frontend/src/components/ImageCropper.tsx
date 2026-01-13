@@ -179,27 +179,27 @@ function ImageCropper({ imageUrl, onCropsComplete, onCancel }: ImageCropperProps
   };
 
   return (
-    <div className="image-cropper">
-      <h2>Select Clothing Items</h2>
-      <p className="instructions">
+    <div className="animate-fade-in">
+      <h2 className="text-2xl font-bold text-gray-900">Select Clothing Items</h2>
+      <p className="mt-2 text-sm text-gray-500">
         Click and drag to select each clothing item in your outfit photo.
       </p>
 
-      <div className="cropper-container">
+      <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_320px]">
         <div
           ref={containerRef}
-          className="image-container"
+          className="flex min-h-[450px] cursor-crosshair select-none items-center justify-center rounded-2xl bg-gradient-to-br from-gray-100 to-gray-50 p-6 shadow-lg"
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
         >
-          <div className="image-wrapper">
+          <div className="relative inline-block">
             <img
               ref={imageRef}
               src={imageUrl}
               alt="Outfit to crop"
-              className="cropper-image"
+              className="block max-h-[600px] max-w-full rounded-xl shadow-xl"
               draggable={false}
             />
 
@@ -207,37 +207,41 @@ function ImageCropper({ imageUrl, onCropsComplete, onCancel }: ImageCropperProps
             {crops.map((crop, index) => (
               <div
                 key={index}
-                className="crop-overlay existing"
+                className="pointer-events-none absolute box-border border-[3px] border-emerald-500 bg-emerald-500/10"
                 style={getCropStyle(crop)}
               >
-                <span className="crop-label">Item {index + 1}</span>
+                <span className="absolute left-1 top-1 rounded bg-emerald-500 px-2 py-0.5 text-xs font-semibold text-white">
+                  Item {index + 1}
+                </span>
               </div>
             ))}
 
             {/* Current selection overlay - uses ref for performance */}
             <div
               ref={selectionRef}
-              className="crop-overlay selecting"
+              className="pointer-events-none absolute box-border border-2 border-dashed border-indigo-500 bg-indigo-500/15"
               style={{ display: 'none' }}
             />
           </div>
         </div>
 
-        <div className="crops-sidebar">
-          <h3>Selected Items ({crops.length})</h3>
+        <div className="sticky top-20 flex h-fit flex-col rounded-2xl border border-gray-200 bg-white p-6 shadow-lg">
+          <h3 className="text-sm font-semibold text-gray-900">Selected Items ({crops.length})</h3>
 
           {crops.length === 0 && (
-            <p className="no-crops">No items selected yet</p>
+            <p className="mt-4 rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 px-4 py-10 text-center text-sm text-gray-400">
+              No items selected yet
+            </p>
           )}
 
-          <div className="crops-list">
+          <div className="mt-4 flex max-h-80 flex-col gap-3 overflow-y-auto">
             {crops.map((crop, index) => (
-              <div key={index} className="crop-item">
-                <img src={crop.imageData} alt={`Crop ${index + 1}`} />
-                <div className="crop-info">
-                  <span className="crop-category">Item {index + 1}</span>
+              <div key={index} className="flex items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 p-3 transition hover:bg-gray-100">
+                <img src={crop.imageData} alt={`Crop ${index + 1}`} className="h-[52px] w-[52px] rounded-md object-cover shadow-sm" />
+                <div className="flex flex-1 flex-col gap-1">
+                  <span className="text-sm font-semibold text-gray-900">Item {index + 1}</span>
                   <button
-                    className="remove-crop"
+                    className="w-fit rounded-md px-2 py-1 text-xs text-gray-400 transition hover:bg-red-50 hover:text-red-500"
                     onClick={() => handleRemoveCrop(index)}
                   >
                     Remove
@@ -248,12 +252,12 @@ function ImageCropper({ imageUrl, onCropsComplete, onCancel }: ImageCropperProps
           </div>
 
           {crops.length > 0 && (
-            <button className="submit-crops" onClick={handleSubmit}>
+            <button className="mt-4 w-full rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:shadow-lg disabled:cursor-not-allowed disabled:from-gray-300 disabled:to-gray-300 disabled:shadow-none disabled:translate-y-0" onClick={handleSubmit}>
               Find Matches ({crops.length} items)
             </button>
           )}
 
-          <button className="cancel-button" onClick={onCancel}>
+          <button className="mt-3 w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-500 transition hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700" onClick={onCancel}>
             Cancel
           </button>
         </div>
@@ -261,21 +265,21 @@ function ImageCropper({ imageUrl, onCropsComplete, onCancel }: ImageCropperProps
 
       {/* Confirm crop modal (simplified - no category selection) */}
       {pendingCrop && (
-        <div className="category-modal-overlay">
-          <div className="category-modal">
-            <h3>Add Item</h3>
-            <img src={pendingCrop.imageData} alt="Selected crop" className="pending-crop-preview" />
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="w-[90%] max-w-md rounded-3xl bg-white p-7 shadow-xl animate-slide-up">
+            <h3 className="text-center text-lg font-semibold text-gray-900">Add Item</h3>
+            <img src={pendingCrop.imageData} alt="Selected crop" className="mt-5 max-h-44 w-full rounded-xl bg-gray-100 object-contain" />
 
-            <p className="modal-description">
+            <p className="mt-5 text-center text-sm text-gray-600">
               Add this selection as Item {crops.length + 1}?
             </p>
 
-            <div className="modal-actions">
-              <button className="add-crop-button" onClick={handleAddCrop}>
+            <div className="mt-6 flex gap-3">
+              <button className="flex-1 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5" onClick={handleAddCrop}>
                 Add Item
               </button>
               <button
-                className="cancel-crop-button"
+                className="flex-1 rounded-xl bg-gray-100 px-4 py-3 text-sm font-semibold text-gray-600 transition hover:bg-gray-200"
                 onClick={() => setPendingCrop(null)}
               >
                 Cancel
