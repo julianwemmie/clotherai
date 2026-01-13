@@ -106,7 +106,7 @@ function MatchResults({ crops, matches, onComplete }: MatchResultsProps) {
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[280px_1fr]">
         {/* Current crop preview */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-lg">
+        <div className="self-start rounded-2xl border border-gray-200 bg-white p-5 shadow-lg">
           <h3 className="text-sm font-semibold text-gray-700">Your Selection</h3>
           <img src={currentCrop.imageData} alt="Selected crop" className="mt-3 max-h-72 w-full rounded-xl bg-gray-100 object-contain" />
         </div>
