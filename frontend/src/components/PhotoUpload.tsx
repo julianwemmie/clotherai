@@ -119,56 +119,65 @@ function PhotoUpload() {
     setError(null);
   };
 
+  const dropzoneClassName = `w-full max-w-xl cursor-pointer rounded-2xl border-2 border-dashed px-8 py-12 transition ${
+    isDragging
+      ? 'border-indigo-500 bg-indigo-100'
+      : 'border-gray-300 bg-gray-50 hover:border-indigo-500 hover:bg-indigo-50'
+  }`;
+
   // Render upload stage
   if (stage === 'upload') {
     return (
-      <div className="photo-upload">
+      <div className="w-full animate-fade-in">
         {error && (
-          <div className="error-message">
+          <div className="mb-6 flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 px-6 py-4 font-medium text-red-500">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="12" y1="8" x2="12" y2="12"/>
-              <line x1="12" y1="16" x2="12.01" y2="16"/>
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
             </svg>
             {error}
           </div>
         )}
 
         {uploading ? (
-          <div className="processing-message">
-            <div className="spinner"></div>
-            <h2>Uploading...</h2>
-            <p>Preparing your image for cropping</p>
+          <div className="rounded-3xl border border-gray-200 bg-white px-8 py-16 text-center shadow-lg">
+            <div className="mx-auto mb-6 h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-indigo-500" />
+            <h2 className="text-2xl font-semibold text-gray-800">Uploading...</h2>
+            <p className="mt-2 text-gray-500">Preparing your image for cropping</p>
           </div>
         ) : (
-          <div className="upload-hero">
-            <h2>Upload Your Outfit</h2>
-            <p>Take a photo of what you're wearing today and we'll help you track it in your wardrobe</p>
+          <div className="rounded-3xl border border-gray-200 bg-white px-6 py-16 text-center shadow-lg sm:px-8">
+            <h2 className="text-2xl font-bold text-gray-900">Upload Your Outfit</h2>
+            <p className="mx-auto mt-2 max-w-md text-lg text-gray-500">
+              Take a photo of what you're wearing today and we'll help you track it in your wardrobe
+            </p>
 
-            <div className="upload-container">
+            <div className="mt-10 flex flex-col items-center gap-4">
               <input
                 type="file"
                 accept="image/jpeg,image/png"
                 onChange={handleInputChange}
                 id="file-input"
+                className="hidden"
               />
               <label
                 htmlFor="file-input"
-                className={`upload-dropzone ${isDragging ? 'dragging' : ''}`}
+                className={dropzoneClassName}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
               >
-                <div className="upload-dropzone-content">
-                  <div className="upload-icon">
+                <div className="flex flex-col items-center gap-4">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-indigo-400 text-2xl text-white shadow-md">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-                      <polyline points="17 8 12 3 7 8"/>
-                      <line x1="12" y1="3" x2="12" y2="15"/>
+                      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                      <polyline points="17 8 12 3 7 8" />
+                      <line x1="12" y1="3" x2="12" y2="15" />
                     </svg>
                   </div>
-                  <span className="upload-text">Drop your photo here or click to browse</span>
-                  <span className="upload-hint">Supports JPEG and PNG up to 10MB</span>
+                  <span className="text-base font-semibold text-gray-700">Drop your photo here or click to browse</span>
+                  <span className="text-sm text-gray-400">Supports JPEG and PNG up to 10MB</span>
                 </div>
               </label>
             </div>
@@ -181,23 +190,23 @@ function PhotoUpload() {
   // Render crop stage
   if (stage === 'crop' && uploadedImageUrl) {
     return (
-      <div className="photo-upload">
+      <div className="w-full animate-fade-in">
         {error && (
-          <div className="error-message">
+          <div className="mb-6 flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 px-6 py-4 font-medium text-red-500">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="12" y1="8" x2="12" y2="12"/>
-              <line x1="12" y1="16" x2="12.01" y2="16"/>
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
             </svg>
             {error}
           </div>
         )}
 
         {processing ? (
-          <div className="processing-message">
-            <div className="spinner"></div>
-            <h2>Processing...</h2>
-            <p>Analyzing your clothing items and searching for matches</p>
+          <div className="rounded-3xl border border-gray-200 bg-white px-8 py-16 text-center shadow-lg">
+            <div className="mx-auto mb-6 h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-indigo-500" />
+            <h2 className="text-2xl font-semibold text-gray-800">Processing...</h2>
+            <p className="mt-2 text-gray-500">Analyzing your clothing items and searching for matches</p>
           </div>
         ) : (
           <ImageCropper
@@ -213,13 +222,13 @@ function PhotoUpload() {
   // Render match stage
   if (stage === 'match') {
     return (
-      <div className="photo-upload">
+      <div className="w-full animate-fade-in">
         {error && (
-          <div className="error-message">
+          <div className="mb-6 flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 px-6 py-4 font-medium text-red-500">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="12" y1="8" x2="12" y2="12"/>
-              <line x1="12" y1="16" x2="12.01" y2="16"/>
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
             </svg>
             {error}
           </div>
@@ -231,10 +240,10 @@ function PhotoUpload() {
           onComplete={handleMatchComplete}
         />
 
-        <button className="reset-button" onClick={handleReset}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '0.5rem' }}>
-            <polyline points="1 4 1 10 7 10"/>
-            <path d="M3.51 15a9 9 0 102.13-9.36L1 10"/>
+        <button className="mt-10 inline-flex items-center justify-center rounded-xl border border-gray-200 px-7 py-3 text-sm font-medium text-gray-500 transition hover:bg-gray-50 hover:text-gray-700" onClick={handleReset}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+            <polyline points="1 4 1 10 7 10" />
+            <path d="M3.51 15a9 9 0 102.13-9.36L1 10" />
           </svg>
           Start Over
         </button>

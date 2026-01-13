@@ -77,40 +77,43 @@ function MatchResults({ crops, matches, onComplete }: MatchResultsProps) {
   };
 
   return (
-    <div className="match-results">
-      <h2>Match Results</h2>
+    <div className="animate-fade-in">
+      <h2 className="text-center text-2xl font-bold text-gray-900">Match Results</h2>
 
       {/* Progress indicator */}
-      <div className="progress-indicator">
-        {crops.map((_, index) => (
-          <div
-            key={index}
-            className={`progress-dot ${
-              completedCrops.has(index)
-                ? 'completed'
-                : index === currentCropIndex
-                ? 'current'
-                : ''
-            }`}
-            onClick={() => !completedCrops.has(index) && setCurrentCropIndex(index)}
-          />
-        ))}
+      <div className="mt-6 flex justify-center gap-2">
+        {crops.map((_, index) => {
+          const baseClasses = 'h-3 w-3 rounded-full bg-gray-200 transition';
+          const stateClasses = completedCrops.has(index)
+            ? 'bg-emerald-500'
+            : index === currentCropIndex
+              ? 'bg-indigo-500 scale-125 shadow-[0_0_0_4px_rgba(99,102,241,0.2)]'
+              : '';
+
+          return (
+            <div
+              key={index}
+              className={`${baseClasses} ${stateClasses}`}
+              onClick={() => !completedCrops.has(index) && setCurrentCropIndex(index)}
+            />
+          );
+        })}
       </div>
 
-      <p className="progress-text">
+      <p className="mt-3 text-center text-sm font-medium text-gray-500">
         Item {currentCropIndex + 1} of {crops.length}
       </p>
 
-      <div className="match-content">
+      <div className="mt-8 grid gap-8 lg:grid-cols-[280px_1fr]">
         {/* Current crop preview */}
-        <div className="crop-preview">
-          <h3>Your Selection</h3>
-          <img src={currentCrop.imageData} alt="Selected crop" />
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-lg">
+          <h3 className="text-sm font-semibold text-gray-700">Your Selection</h3>
+          <img src={currentCrop.imageData} alt="Selected crop" className="mt-3 max-h-72 w-full rounded-xl bg-gray-100 object-contain" />
         </div>
 
         {/* Matches list */}
-        <div className="matches-list">
-          <h3>
+        <div className="flex flex-col">
+          <h3 className="text-base font-semibold text-gray-900">
             {currentMatches.length > 0
               ? `Matches (${currentMatches.length})`
               : 'No matches found - create as new item'}
@@ -118,37 +121,46 @@ function MatchResults({ crops, matches, onComplete }: MatchResultsProps) {
 
           {currentMatches.length > 0 ? (
             <>
-              <div className="debug-info">
-                <p>Select a match or create a new item</p>
-                <p className="debug-legend">
-                  <span className="legend-item"><span className="color-box high"></span>70%+ = High match</span>
-                  <span className="legend-item"><span className="color-box medium"></span>50-70% = Medium</span>
-                  <span className="legend-item"><span className="color-box low"></span>&lt;50% = Low</span>
-                </p>
+              <div className="mt-4 rounded-xl border-2 border-amber-400 bg-amber-50 p-4 text-amber-900">
+                <p className="text-sm font-medium">Select a match or create a new item</p>
+                <div className="mt-2 flex flex-wrap gap-4 text-xs text-amber-900">
+                  <span className="flex items-center gap-2">
+                    <span className="h-5 w-5 rounded border-2 border-black/10 bg-gradient-to-br from-emerald-100 to-emerald-200" />
+                    70%+ = High match
+                  </span>
+                  <span className="flex items-center gap-2">
+                    <span className="h-5 w-5 rounded border-2 border-black/10 bg-gradient-to-br from-amber-100 to-amber-200" />
+                    50-70% = Medium
+                  </span>
+                  <span className="flex items-center gap-2">
+                    <span className="h-5 w-5 rounded border-2 border-black/10 bg-gradient-to-br from-red-100 to-red-200" />
+                    &lt;50% = Low
+                  </span>
+                </div>
               </div>
 
-              <div className="matches-grid">
+              <div className="mt-4 flex flex-col gap-3">
                 {currentMatches.map((match) => {
                   const similarityClass =
-                    match.similarity >= 70 ? 'high-match' :
-                    match.similarity >= 50 ? 'medium-match' :
-                    'low-match';
+                    match.similarity >= 70 ? 'border-emerald-500 bg-gradient-to-br from-white to-emerald-100' :
+                    match.similarity >= 50 ? 'border-amber-500 bg-gradient-to-br from-white to-amber-100' :
+                    'border-red-500 bg-gradient-to-br from-white to-red-100';
 
                   return (
-                    <div key={match.item_id} className={`match-card ${similarityClass}`}>
+                    <div key={match.item_id} className={`flex items-center gap-4 rounded-2xl border-2 p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${similarityClass}`}>
                       <img
                         src={getItemThumbnail(match.item_id)}
                         alt={match.name}
-                        className="match-thumbnail"
+                        className="h-[72px] w-[72px] rounded-xl bg-gray-100 object-cover"
                       />
-                      <div className="match-info">
-                        <h4>{match.name}</h4>
-                        <p className="match-similarity">
+                      <div className="flex flex-1 flex-col">
+                        <h4 className="text-base font-semibold text-gray-900">{match.name}</h4>
+                        <p className="text-sm font-semibold text-emerald-600">
                           <strong>{match.similarity.toFixed(1)}%</strong> similarity
                         </p>
                       </div>
                       <button
-                        className="confirm-match-button"
+                        className="rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 px-5 py-2 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:from-gray-300 disabled:to-gray-300 disabled:shadow-none disabled:translate-y-0"
                         onClick={() => handleConfirmMatch(match)}
                         disabled={processing}
                       >
@@ -160,7 +172,7 @@ function MatchResults({ crops, matches, onComplete }: MatchResultsProps) {
               </div>
 
               <button
-                className="new-item-button"
+                className="mt-4 w-full rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:from-gray-300 disabled:to-gray-300 disabled:shadow-none disabled:translate-y-0"
                 onClick={handleNewItem}
                 disabled={processing}
               >
@@ -169,7 +181,7 @@ function MatchResults({ crops, matches, onComplete }: MatchResultsProps) {
             </>
           ) : (
             <button
-              className="new-item-button primary"
+              className="mt-4 w-full rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:from-gray-300 disabled:to-gray-300 disabled:shadow-none disabled:translate-y-0"
               onClick={handleNewItem}
               disabled={processing}
             >
@@ -178,7 +190,7 @@ function MatchResults({ crops, matches, onComplete }: MatchResultsProps) {
           )}
 
           <button
-            className="skip-button"
+            className="mt-3 w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-500 transition hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700 disabled:cursor-not-allowed"
             onClick={handleSkip}
             disabled={processing}
           >
@@ -190,7 +202,7 @@ function MatchResults({ crops, matches, onComplete }: MatchResultsProps) {
       {/* New item form modal */}
       {showNewItemForm && (
         <div
-          className="modal-overlay"
+          className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in"
           onClick={(e) => {
             if (e.target === e.currentTarget && !processing) {
               setShowNewItemForm(false);
@@ -198,9 +210,9 @@ function MatchResults({ crops, matches, onComplete }: MatchResultsProps) {
             }
           }}
         >
-          <div className="new-item-modal">
+          <div className="relative w-[90%] max-w-md rounded-3xl bg-white p-8 shadow-xl animate-slide-up">
             <button
-              className="modal-close-x"
+              className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-600 transition hover:bg-gray-200 hover:text-gray-900 disabled:opacity-50"
               onClick={() => {
                 setShowNewItemForm(false);
                 setNewItemName('');
@@ -209,20 +221,20 @@ function MatchResults({ crops, matches, onComplete }: MatchResultsProps) {
               aria-label="Close"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18"/>
-                <line x1="6" y1="6" x2="18" y2="18"/>
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
               </svg>
             </button>
-            <h3>Create New Item</h3>
+            <h3 className="text-center text-xl font-semibold text-gray-900">Create New Item</h3>
 
             <img
               src={currentCrop.imageData}
               alt="New item"
-              className="new-item-preview"
+              className="mt-6 max-h-52 w-full rounded-xl bg-gray-100 object-contain"
             />
 
-            <div className="form-group">
-              <label htmlFor="item-name">Name</label>
+            <div className="mt-6 space-y-2">
+              <label htmlFor="item-name" className="text-sm font-semibold text-gray-700">Name</label>
               <input
                 id="item-name"
                 type="text"
@@ -230,19 +242,20 @@ function MatchResults({ crops, matches, onComplete }: MatchResultsProps) {
                 onChange={(e) => setNewItemName(e.target.value)}
                 placeholder="e.g., Blue T-shirt"
                 autoFocus
+                className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 text-base transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
               />
             </div>
 
-            <div className="modal-actions">
+            <div className="mt-6 flex gap-3">
               <button
-                className="create-button"
+                className="flex-1 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:from-gray-300 disabled:to-gray-300 disabled:shadow-none disabled:translate-y-0"
                 onClick={handleCreateItem}
                 disabled={processing}
               >
                 {processing ? 'Creating...' : 'Create Item'}
               </button>
               <button
-                className="cancel-button"
+                className="flex-1 rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed"
                 onClick={() => setShowNewItemForm(false)}
                 disabled={processing}
               >
