@@ -2,9 +2,12 @@ import os
 import base64
 import requests
 import time
+import logging
 from typing import List
 from PIL import Image
 import io
+
+logger = logging.getLogger(__name__)
 
 # Configuration
 JINA_API_KEY = os.getenv('JINA_API_KEY')
@@ -91,7 +94,7 @@ def generate_embedding_from_base64(image_data: str, max_retries: int = 3) -> Lis
         if attempt > 0:
             # Exponential backoff: 2, 4, 8 seconds
             wait_time = 2 ** attempt
-            print(f"Retry attempt {attempt + 1}/{max_retries} after {wait_time}s wait...")
+            logger.info(f"Retry attempt {attempt + 1}/{max_retries} after {wait_time}s wait...")
             time.sleep(wait_time)
 
         response = requests.post(JINA_API_URL, headers=_get_headers(), json=payload)
@@ -101,12 +104,14 @@ def generate_embedding_from_base64(image_data: str, max_retries: int = 3) -> Lis
             return result["data"][0]["embedding"]
 
         last_error = response
-        print(f"Jina API error: {response.status_code}")
+        logger.warning(f"Jina API error: {response.status_code}")
 
     # All retries failed
-    print(f"Jina API error after {max_retries} attempts: {last_error.status_code}")
-    print(f"Response body: {last_error.text}")
+    logger.error(f"Jina API error after {max_retries} attempts: {last_error.status_code}")
+    logger.error(f"Response body: {last_error.text}")
     last_error.raise_for_status()
+    # raise_for_status() will raise an exception, but add explicit raise for type checker
+    raise RuntimeError(f"Jina API request failed with status {last_error.status_code}")
 
 
 def generate_embedding_from_file(file_path: str) -> List[float]:

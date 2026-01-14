@@ -35,4 +35,4 @@
    # If ports still in use, kill by PID shown in lsof output
    # kill -9 <PID>
    ```
-- Final cleaup is to delete did_claude_start_app.json tmp file.
+- Final cleanup is to delete did_claude_start_app.json tmp file.

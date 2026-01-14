@@ -4,7 +4,11 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
 import os
-import traceback
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Load .env file before other imports that use environment variables
 load_dotenv()
@@ -32,8 +36,7 @@ async def global_exception_handler(request: Request, exc: Exception):
     origin = request.headers.get("origin")
 
     # Log the error for debugging
-    print(f"Unhandled exception: {exc}")
-    traceback.print_exc()
+    logger.error(f"Unhandled exception: {exc}", exc_info=True)
 
     response = JSONResponse(
         status_code=500,
@@ -55,6 +58,12 @@ app.include_router(items.router)
 @app.on_event("startup")
 async def startup_event():
     init_database()
+
+    # Validate optional environment variables and log warnings
+    if not os.getenv('HF_TOKEN'):
+        logger.warning("HF_TOKEN not set - clothing segmentation will not be available")
+    if not os.getenv('JINA_API_KEY'):
+        logger.warning("JINA_API_KEY not set - image embeddings will not be available")
 
 
 @app.get("/")
