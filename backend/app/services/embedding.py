@@ -1,6 +1,7 @@
 import os
 import base64
 import requests
+import time
 from typing import List
 from PIL import Image
 import io
@@ -24,33 +25,88 @@ def _get_headers():
     }
 
 
-def generate_embedding_from_base64(image_data: str) -> List[float]:
+def _preprocess_image(image_data: str, max_size: int = 1024, quality: int = 85) -> str:
+    """
+    Preprocess image by resizing and recompressing.
+
+    Args:
+        image_data: Base64 encoded image string (with or without data URL prefix)
+        max_size: Maximum dimension (width or height)
+        quality: JPEG quality (1-100)
+
+    Returns:
+        Preprocessed base64 data URL
+    """
+    # Extract base64 data
+    if ',' in image_data:
+        base64_data = image_data.split(',')[1]
+    else:
+        base64_data = image_data
+
+    # Decode and open image
+    image_bytes = base64.b64decode(base64_data)
+    image = Image.open(io.BytesIO(image_bytes))
+
+    # Convert to RGB if necessary
+    if image.mode in ('RGBA', 'LA', 'P'):
+        image = image.convert('RGB')
+
+    # Resize if larger than max_size
+    if max(image.size) > max_size:
+        ratio = max_size / max(image.size)
+        new_size = (int(image.width * ratio), int(image.height * ratio))
+        image = image.resize(new_size, Image.Resampling.LANCZOS)
+
+    # Recompress as JPEG
+    buffer = io.BytesIO()
+    image.save(buffer, format='JPEG', quality=quality)
+    new_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+
+    return f"data:image/jpeg;base64,{new_base64}"
+
+
+def generate_embedding_from_base64(image_data: str, max_retries: int = 3) -> List[float]:
     """
     Generate embedding from a base64-encoded image.
 
     Args:
         image_data: Base64 encoded image string (may include data URL prefix)
+        max_retries: Maximum number of retry attempts
 
     Returns:
         List of 2048 floats representing the image embedding
     """
-    # Keep the data URL format for Jina API
-    if not image_data.startswith('data:'):
-        # Add data URL prefix if not present
-        image_data = f"data:image/jpeg;base64,{image_data}"
+    # Always preprocess images to ensure consistent format for Jina API
+    # This normalizes the image format and reduces size to avoid API issues
+    image_data = _preprocess_image(image_data, max_size=1024, quality=90)
 
     payload = {
         "model": JINA_MODEL,
         "input": [{"image": image_data}],
         "normalized": True,
-        "task": "retrieval.query"
     }
 
-    response = requests.post(JINA_API_URL, headers=_get_headers(), json=payload)
-    response.raise_for_status()
+    last_error = None
+    for attempt in range(max_retries):
+        if attempt > 0:
+            # Exponential backoff: 2, 4, 8 seconds
+            wait_time = 2 ** attempt
+            print(f"Retry attempt {attempt + 1}/{max_retries} after {wait_time}s wait...")
+            time.sleep(wait_time)
 
-    result = response.json()
-    return result["data"][0]["embedding"]
+        response = requests.post(JINA_API_URL, headers=_get_headers(), json=payload)
+
+        if response.ok:
+            result = response.json()
+            return result["data"][0]["embedding"]
+
+        last_error = response
+        print(f"Jina API error: {response.status_code}")
+
+    # All retries failed
+    print(f"Jina API error after {max_retries} attempts: {last_error.status_code}")
+    print(f"Response body: {last_error.text}")
+    last_error.raise_for_status()
 
 
 def generate_embedding_from_file(file_path: str) -> List[float]:
