@@ -38,3 +38,15 @@ export interface WearLog {
   worn_date: string;
   outfit_image_path: string | null;
 }
+
+export interface SegmentedItem {
+  label: string;
+  score: number;
+  imageData: string;
+  boundingBox: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+}

@@ -5,6 +5,9 @@ import os
 from PIL import Image
 import io
 
+from ..models import SegmentRequest, SegmentResponse, SegmentedItem
+from ..services.segmentation import segment_clothes
+
 router = APIRouter(prefix="/api", tags=["upload"])
 
 IMAGES_PATH = os.getenv('IMAGES_PATH', '../data/images')
@@ -56,3 +59,36 @@ async def upload_photo(file: UploadFile = File(...)):
         "image_path": str(file_path),
         "filename": filename
     }
+
+
+@router.post("/segment", response_model=SegmentResponse)
+async def segment_image(request: SegmentRequest):
+    """
+    Automatically segment clothing items from an image.
+
+    Uses the SegFormer B3 Clothes model to detect and segment
+    clothing items like shirts, pants, shoes, etc.
+
+    Returns cropped images and bounding boxes for each detected item.
+    """
+    try:
+        items = segment_clothes(request.image_data)
+
+        return SegmentResponse(
+            items=[
+                SegmentedItem(
+                    label=item['label'],
+                    score=item['score'],
+                    imageData=item['imageData'],
+                    boundingBox=item['boundingBox']
+                )
+                for item in items
+            ]
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Segmentation failed: {str(e)}"
+        )

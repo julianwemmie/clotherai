@@ -13,13 +13,13 @@
 ## Environment Configuration
 
 - **UV Package Manager**: The `uv` command is located at `/Users/julia/.local/bin/uv`. Always use the full path when running uv commands since `.local/bin` is not in the non-interactive shell PATH.
-- **Check running processes first**: Before starting frontend or backend, verify they aren't already running. Only start them if needed.
+- **Check running processes first**: Before starting frontend or backend, verify they aren't already running. Only start them if needed. Create a simple file to keep track of this: did_claude_start_app.json, with true or false.
 
 ## After Completing Work
 
  - Verify frontend styling with Playwright MCP
  - After done using Playwright MCP, delete any screenshots in .playwright-mcp folder
- - **Kill all running processes**: Check for and terminate any leftover frontend (vite, esbuild) and backend (python, uvicorn) processes to prevent port conflicts and resource usage
+ - **Kill all running processes**: Check did_claude_start_app.json to see if Claude started the frontend and backend. If Claude started them i.e. the file is true, then check for and terminate any leftover frontend (vite, esbuild) and backend (python, uvicorn) processes to prevent port conflicts and resource usage
 
    **Required cleanup commands:**
    ```bash
@@ -35,3 +35,4 @@
    # If ports still in use, kill by PID shown in lsof output
    # kill -9 <PID>
    ```
+- Final cleaup is to delete did_claude_start_app.json tmp file.
