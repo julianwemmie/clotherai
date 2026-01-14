@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { ClothingItem, MatchResult, CroppedItem, ItemImage } from '../types/index.js';
+import type { ClothingItem, MatchResult, CroppedItem, ItemImage, SegmentedItem } from '../types/index.js';
 
 const API_BASE_URL = 'http://localhost:8000';
 
@@ -116,4 +116,9 @@ export const updateThumbnail = async (
     clear: options.clear,
   });
   return response.data;
+};
+
+export const segmentImage = async (imageData: string): Promise<SegmentedItem[]> => {
+  const response = await api.post('/api/segment', { image_data: imageData });
+  return response.data.items;
 };

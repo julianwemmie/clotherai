@@ -19,6 +19,7 @@ The app uses a "cold-start" approach - no need to catalog your entire wardrobe u
 - **Backend**: Python + FastAPI
 - **Database**: SQLite + sqlite-vec extension for vector similarity search
 - **Embeddings**: Jina AI Embeddings v4 API (2048-dimensional vectors)
+- **Clothing Segmentation**: HuggingFace SegFormer B3 Clothes model (automatic item detection)
 - **Image Storage**: Local filesystem
 - **Package Management**: uv for Python dependencies
 
@@ -45,13 +46,16 @@ ClotherAI/
 
 ## Key Features
 
-### 1. Photo Upload & Cropping
+### 1. Photo Upload & Automatic Item Detection
 - Upload daily outfit photos
-- Use interactive canvas to crop individual clothing items
-- Label items by category (top, bottom, outerwear, shoes)
+- **Auto-Detect**: Automatically segment and detect clothing items using SegFormer B3 Clothes model
+- **Manual Cropping**: Use interactive canvas to crop individual clothing items if preferred
+- Items are sorted by position (top to bottom) for consistent ordering
+- Support for left/right shoe merging into single "Shoes" segment
 
 ### 2. AI-Powered Matching
-- Generate embeddings using Jina AI Embeddings v4
+- Generate embeddings using Jina AI Embeddings v4 with automatic retry and backoff logic
+- Image preprocessing for consistent embedding quality
 - Find similar items using cosine similarity search
 - De-duplicate results to show top 5 unique clothing items
 - Threshold-based new item detection
@@ -101,21 +105,21 @@ The project is divided into 4 development stages:
 
 ## Prerequisites
 
-- Google Cloud Platform project with Vertex AI API enabled
-- Service account with Vertex AI permissions
-- Service account JSON key file
-- `GOOGLE_APPLICATION_CREDENTIALS` environment variable set
 - Node.js 18+
-- Python 3.9+
+- Python 3.11+
 - uv package manager
+- Jina AI API key (for embeddings)
+- HuggingFace API token (for clothing segmentation)
 
 ## Environment Configuration
 
-Required environment variables:
-- `GOOGLE_APPLICATION_CREDENTIALS` - Path to GCP service account key
-- `GCP_PROJECT_ID` - Your Google Cloud project ID
-- `DATABASE_PATH` - Path to SQLite database file
-- `IMAGES_PATH` - Path to image storage directory
+Required environment variables (backend):
+- `JINA_API_KEY` - Your Jina AI API key for generating embeddings
+- `JINA_MODEL` - Jina model to use (default: `jina-embeddings-v4`)
+- `HF_TOKEN` - Your HuggingFace API token for clothing segmentation
+- `DATABASE_PATH` - Path to SQLite database file (default: `../data/clotherai.db`)
+- `IMAGES_PATH` - Path to image storage directory (default: `../data/images`)
+- `TEMP_PATH` - Path for temporary file storage (default: `../data/temp`)
 
 ## Running the Application
 
@@ -136,22 +140,16 @@ npm run dev
 ## Success Criteria
 
 - ✅ User can upload outfit photos
-- ✅ User can manually crop clothing items
-- ✅ System generates embeddings via Jina AI
+- ✅ User can automatically detect clothing items or manually crop them
+- ✅ System generates embeddings via Jina AI with retry logic for reliability
 - ✅ System matches crops against wardrobe with de-duplication
 - ✅ User can confirm matches or create new items
 - ✅ Wear frequency tracking works correctly
 - ✅ Wardrobe view displays items with AI thumbnails and stats
 - ✅ Cold-start experience is smooth (no upfront cataloging needed)
+- ✅ Automatic clothing segmentation works reliably
 
 ## Future Enhancements
-
-- Auto-segmentation using SAM or similar model (eliminate manual cropping)
-- Advanced analytics (seasonal trends, color analysis, outfit combinations)
-- Self-hosted DINOv2 embeddings to reduce API costs
-- React Native mobile app for easier daily logging
-- Social features (share stats, outfit inspiration)
-
 ## Documentation
 
 See [plan.md](plan.md) for the complete implementation plan with detailed technical specifications.

@@ -81,9 +81,6 @@ function WardrobeView() {
     return date.toLocaleDateString();
   };
 
-  const totalWears = items.reduce((sum, item) => sum + item.wear_count, 0);
-  const avgWears = items.length > 0 ? (totalWears / items.length).toFixed(1) : '0';
-
   const getThumbnailUrl = (itemId: string) => {
     const version = thumbnailVersions[itemId];
     const baseUrl = getItemThumbnail(itemId);
@@ -307,38 +304,6 @@ function WardrobeView() {
           </svg>
           Add Item
         </button>
-      </div>
-
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <div className="flex flex-col items-center rounded-2xl border border-gray-200 bg-white p-6 shadow-md transition hover:-translate-y-0.5 hover:shadow-lg">
-          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-100 to-blue-200 text-blue-600">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.47a1 1 0 00.99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.47a2 2 0 00-1.34-2.23z" />
-            </svg>
-          </div>
-          <span className="text-3xl font-bold text-gray-900">{items.length}</span>
-          <span className="mt-1 text-sm font-medium text-gray-500">Total Items</span>
-        </div>
-        <div className="flex flex-col items-center rounded-2xl border border-gray-200 bg-white p-6 shadow-md transition hover:-translate-y-0.5 hover:shadow-lg">
-          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-100 to-emerald-200 text-emerald-600">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-            </svg>
-          </div>
-          <span className="text-3xl font-bold text-gray-900">{totalWears}</span>
-          <span className="mt-1 text-sm font-medium text-gray-500">Total Wears</span>
-        </div>
-        <div className="flex flex-col items-center rounded-2xl border border-gray-200 bg-white p-6 shadow-md transition hover:-translate-y-0.5 hover:shadow-lg">
-          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-amber-100 to-amber-200 text-amber-600">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="20" x2="18" y2="10" />
-              <line x1="12" y1="20" x2="12" y2="4" />
-              <line x1="6" y1="20" x2="6" y2="14" />
-            </svg>
-          </div>
-          <span className="text-3xl font-bold text-gray-900">{avgWears}</span>
-          <span className="mt-1 text-sm font-medium text-gray-500">Avg. Wears</span>
-        </div>
       </div>
 
       <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -638,18 +603,18 @@ function WardrobeView() {
 
             <div className="mt-6 flex gap-3">
               <button
-                className="flex-1 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:from-gray-300 disabled:to-gray-300 disabled:shadow-none disabled:translate-y-0"
-                onClick={handleCreateItem}
-                disabled={addingItem || !newItemName.trim()}
-              >
-                {addingItem ? 'Creating...' : 'Create Item'}
-              </button>
-              <button
                 className="flex-1 rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed"
                 onClick={() => setShowAddModal(false)}
                 disabled={addingItem}
               >
                 Cancel
+              </button>
+              <button
+                className="flex-1 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:from-gray-300 disabled:to-gray-300 disabled:shadow-none disabled:translate-y-0"
+                onClick={handleCreateItem}
+                disabled={addingItem || !newItemName.trim()}
+              >
+                {addingItem ? 'Creating...' : 'Create Item'}
               </button>
             </div>
           </div>
@@ -687,18 +652,18 @@ function WardrobeView() {
             </p>
             <div className="mt-6 flex gap-3">
               <button
-                className="flex-1 rounded-xl bg-gradient-to-br from-red-500 to-red-600 px-4 py-3 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:from-gray-300 disabled:to-gray-300 disabled:shadow-none disabled:translate-y-0"
-                onClick={handleConfirmDelete}
-                disabled={deletingItem}
-              >
-                {deletingItem ? 'Deleting...' : 'Delete'}
-              </button>
-              <button
                 className="flex-1 rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed"
                 onClick={() => setDeleteConfirmId(null)}
                 disabled={deletingItem}
               >
                 Cancel
+              </button>
+              <button
+                className="flex-1 rounded-xl bg-gradient-to-br from-red-500 to-red-600 px-4 py-3 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:from-gray-300 disabled:to-gray-300 disabled:shadow-none disabled:translate-y-0"
+                onClick={handleConfirmDelete}
+                disabled={deletingItem}
+              >
+                {deletingItem ? 'Deleting...' : 'Delete'}
               </button>
             </div>
           </div>

@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import type { CroppedItem } from '../types/index.js';
+import { segmentImage } from '../services/api.js';
 
 interface ImageCropperProps {
   imageUrl: string;
@@ -20,6 +21,8 @@ function ImageCropper({ imageUrl, onCropsComplete, onCancel }: ImageCropperProps
   const startPosRef = useRef({ x: 0, y: 0 });
   const [crops, setCrops] = useState<CroppedItem[]>([]);
   const [pendingCrop, setPendingCrop] = useState<PendingCrop | null>(null);
+  const [isAutoDetecting, setIsAutoDetecting] = useState(false);
+  const [autoDetectError, setAutoDetectError] = useState<string | null>(null);
 
   const getRelativeCoordinates = useCallback((e: React.MouseEvent | MouseEvent) => {
     const img = imageRef.current;
@@ -154,6 +157,33 @@ function ImageCropper({ imageUrl, onCropsComplete, onCancel }: ImageCropperProps
     setCrops(crops.filter((_, i) => i !== index));
   };
 
+  const handleAutoDetect = async () => {
+    setIsAutoDetecting(true);
+    setAutoDetectError(null);
+
+    try {
+      const segmentedItems = await segmentImage(imageUrl);
+
+      if (segmentedItems.length === 0) {
+        setAutoDetectError('No clothing items detected. Try manual selection.');
+        return;
+      }
+
+      // Convert segmented items to CroppedItem format
+      const newCrops: CroppedItem[] = segmentedItems.map(item => ({
+        imageData: item.imageData,
+        boundingBox: item.boundingBox,
+      }));
+
+      setCrops(prev => [...prev, ...newCrops]);
+    } catch (err) {
+      console.error('Auto-detect failed:', err);
+      setAutoDetectError('Auto-detection failed. Please try manual selection.');
+    } finally {
+      setIsAutoDetecting(false);
+    }
+  };
+
   const handleSubmit = () => {
     if (crops.length === 0) {
       alert('Please select at least one clothing item');
@@ -180,10 +210,44 @@ function ImageCropper({ imageUrl, onCropsComplete, onCancel }: ImageCropperProps
 
   return (
     <div className="animate-fade-in">
-      <h2 className="text-2xl font-bold text-gray-900">Select Clothing Items</h2>
-      <p className="mt-2 text-sm text-gray-500">
-        Click and drag to select each clothing item in your outfit photo.
-      </p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Select Clothing Items</h2>
+          <p className="mt-2 text-sm text-gray-500">
+            Use auto-detect or click and drag to select each clothing item.
+          </p>
+        </div>
+        <button
+          onClick={handleAutoDetect}
+          disabled={isAutoDetecting}
+          className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:shadow-lg disabled:cursor-not-allowed disabled:from-gray-300 disabled:to-gray-300 disabled:shadow-none disabled:translate-y-0"
+        >
+          {isAutoDetecting ? (
+            <>
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+              Detecting...
+            </>
+          ) : (
+            <>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+              </svg>
+              Auto-Detect
+            </>
+          )}
+        </button>
+      </div>
+
+      {autoDetectError && (
+        <div className="mt-4 flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-700">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          {autoDetectError}
+        </div>
+      )}
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_320px]">
         <div
@@ -275,14 +339,14 @@ function ImageCropper({ imageUrl, onCropsComplete, onCancel }: ImageCropperProps
             </p>
 
             <div className="mt-6 flex gap-3">
-              <button className="flex-1 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5" onClick={handleAddCrop}>
-                Add Item
-              </button>
               <button
                 className="flex-1 rounded-xl bg-gray-100 px-4 py-3 text-sm font-semibold text-gray-600 transition hover:bg-gray-200"
                 onClick={() => setPendingCrop(null)}
               >
                 Cancel
+              </button>
+              <button className="flex-1 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5" onClick={handleAddCrop}>
+                Add Item
               </button>
             </div>
           </div>

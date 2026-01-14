@@ -106,7 +106,7 @@ function MatchResults({ crops, matches, onComplete }: MatchResultsProps) {
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[280px_1fr]">
         {/* Current crop preview */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-lg">
+        <div className="self-start rounded-2xl border border-gray-200 bg-white p-5 shadow-lg">
           <h3 className="text-sm font-semibold text-gray-700">Your Selection</h3>
           <img src={currentCrop.imageData} alt="Selected crop" className="mt-3 max-h-72 w-full rounded-xl bg-gray-100 object-contain" />
         </div>
@@ -248,18 +248,18 @@ function MatchResults({ crops, matches, onComplete }: MatchResultsProps) {
 
             <div className="mt-6 flex gap-3">
               <button
-                className="flex-1 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:from-gray-300 disabled:to-gray-300 disabled:shadow-none disabled:translate-y-0"
-                onClick={handleCreateItem}
-                disabled={processing}
-              >
-                {processing ? 'Creating...' : 'Create Item'}
-              </button>
-              <button
                 className="flex-1 rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed"
                 onClick={() => setShowNewItemForm(false)}
                 disabled={processing}
               >
                 Cancel
+              </button>
+              <button
+                className="flex-1 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:from-gray-300 disabled:to-gray-300 disabled:shadow-none disabled:translate-y-0"
+                onClick={handleCreateItem}
+                disabled={processing}
+              >
+                {processing ? 'Creating...' : 'Create Item'}
               </button>
             </div>
           </div>
