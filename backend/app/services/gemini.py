@@ -14,6 +14,14 @@ PRODUCT_THUMBNAIL_PROMPT = """Create a professional product photograph of this c
 Preserve all details and textures. Remove any person or mannequin, showing only the garment flat lay style."""
 
 
+def _detect_mime_type(image_bytes: bytes) -> str:
+    if image_bytes.startswith(b"\x89PNG\r\n\x1a\n"):
+        return "image/png"
+    if image_bytes.startswith(b"\xff\xd8\xff"):
+        return "image/jpeg"
+    return "image/png"
+
+
 def generate_product_thumbnail(image_path: str, max_retries: int = 3) -> str:
     """
     Generate a product-style thumbnail using Replicate's nano-banana model.
@@ -23,7 +31,7 @@ def generate_product_thumbnail(image_path: str, max_retries: int = 3) -> str:
         max_retries: Maximum number of retry attempts
 
     Returns:
-        Base64 data URL of the generated thumbnail (data:image/jpeg;base64,...)
+        Base64 data URL of the generated thumbnail (data:image/<type>;base64,...)
 
     Raises:
         ValueError: If REPLICATE_API_TOKEN is not set
@@ -56,7 +64,8 @@ def generate_product_thumbnail(image_path: str, max_retries: int = 3) -> str:
 
             # Convert to base64 data URL
             generated_base64 = base64.b64encode(image_bytes).decode('utf-8')
-            return f"data:image/png;base64,{generated_base64}"
+            mime_type = _detect_mime_type(image_bytes)
+            return f"data:{mime_type};base64,{generated_base64}"
 
         except Exception as e:
             last_error = e

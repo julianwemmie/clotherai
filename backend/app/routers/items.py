@@ -7,6 +7,7 @@ import base64
 import os
 import shutil
 from datetime import datetime, date, timezone
+from starlette.concurrency import run_in_threadpool
 
 from ..models import (
     ClothingItem, CreateItemRequest, LogWearRequest,
@@ -429,12 +430,15 @@ async def generate_item_thumbnail(item_id: str) -> dict:
 
     # Verify image file exists
     image_path = Path(row['image_path'])
+    base_path = Path(IMAGES_PATH).resolve()
+    if not is_path_safe(image_path, base_path):
+        raise HTTPException(status_code=400, detail="Invalid image path")
     if not image_path.exists():
         raise HTTPException(status_code=404, detail="Image file not found")
 
     # Generate thumbnail using Replicate
     try:
-        generated_thumbnail = generate_product_thumbnail(str(image_path))
+        generated_thumbnail = await run_in_threadpool(generate_product_thumbnail, str(image_path))
         return {"success": True, "image_data": generated_thumbnail}
     except ValueError as e:
         raise HTTPException(status_code=503, detail=str(e))  # REPLICATE_API_TOKEN not set

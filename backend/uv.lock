@@ -65,7 +65,7 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.12.5" },
     { name = "python-dotenv", specifier = ">=1.0.0" },
     { name = "python-multipart", specifier = ">=0.0.20" },
-    { name = "replicate" },
+    { name = "replicate", specifier = ">=1.0.7" },
     { name = "requests", specifier = ">=2.31.0" },
     { name = "sqlite-vec", specifier = ">=0.1.6" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.39.0" },
