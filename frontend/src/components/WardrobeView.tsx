@@ -10,6 +10,7 @@ import {
   createItemManual,
   getItem,
   updateThumbnail,
+  generateThumbnail,
 } from '../services/api.js';
 
 type ThumbnailSelection =
@@ -38,6 +39,7 @@ function WardrobeView() {
   const [editItemImages, setEditItemImages] = useState<ItemImage[]>([]);
   const [thumbnailSelection, setThumbnailSelection] = useState<ThumbnailSelection>({ type: 'keep' });
   const [savingEditItem, setSavingEditItem] = useState(false);
+  const [generatingThumbnail, setGeneratingThumbnail] = useState(false);
   const [thumbnailVersions, setThumbnailVersions] = useState<Record<string, number>>({});
 
   // Delete confirmation modal
@@ -191,6 +193,28 @@ function WardrobeView() {
         setThumbnailSelection({ type: 'custom', imageData: event.target?.result as string });
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleGenerateThumbnail = async () => {
+    if (!editModalItemId) return;
+
+    setGeneratingThumbnail(true);
+    try {
+      const result = await generateThumbnail(editModalItemId);
+      // Set generated image as custom thumbnail for preview
+      setThumbnailSelection({
+        type: 'custom',
+        imageData: result.image_data
+      });
+    } catch (error: any) {
+      console.error('Failed to generate thumbnail:', error);
+      alert(
+        error.response?.data?.detail ||
+        'Failed to generate thumbnail. Make sure you have at least one reference image.'
+      );
+    } finally {
+      setGeneratingThumbnail(false);
     }
   };
 
@@ -368,7 +392,7 @@ function WardrobeView() {
         <div
           className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in"
           onClick={(e) => {
-            if (e.target === e.currentTarget && !savingEditItem) {
+            if (e.target === e.currentTarget && !savingEditItem && !generatingThumbnail) {
               resetEditModal();
             }
           }}
@@ -377,7 +401,7 @@ function WardrobeView() {
             <button
               className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-600 transition hover:bg-gray-200 hover:text-gray-900 disabled:opacity-50"
               onClick={resetEditModal}
-              disabled={savingEditItem}
+              disabled={savingEditItem || generatingThumbnail}
               aria-label="Close"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -464,7 +488,7 @@ function WardrobeView() {
                         type="button"
                         className="flex-1 rounded-xl bg-gray-100 px-4 py-3 text-sm font-medium text-gray-600 transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
                         onClick={() => setThumbnailSelection({ type: 'clear' })}
-                        disabled={savingEditItem}
+                        disabled={savingEditItem || generatingThumbnail}
                       >
                         Reset to Default
                       </button>
@@ -472,7 +496,7 @@ function WardrobeView() {
                         type="button"
                         className="flex flex-1 items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-300 bg-gray-100 px-4 py-3 text-sm font-medium text-gray-600 transition hover:border-indigo-500 hover:bg-indigo-50 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-50"
                         onClick={() => editThumbnailFileInputRef.current?.click()}
-                        disabled={savingEditItem}
+                        disabled={savingEditItem || generatingThumbnail}
                       >
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                           <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
@@ -488,6 +512,31 @@ function WardrobeView() {
                         onChange={handleEditThumbnailFileSelect}
                         className="hidden"
                       />
+                      <button
+                        type="button"
+                        className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 px-4 py-3 text-sm font-medium text-white shadow-md transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:from-gray-300 disabled:to-gray-300 disabled:shadow-none disabled:translate-y-0"
+                        onClick={handleGenerateThumbnail}
+                        disabled={savingEditItem || generatingThumbnail || editItemImages.length === 0}
+                      >
+                        {generatingThumbnail ? (
+                          <>
+                            <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                              <circle cx="12" cy="12" r="10" strokeOpacity="0.25" />
+                              <path d="M12 2a10 10 0 0 1 10 10" strokeOpacity="0.75" />
+                            </svg>
+                            Generating...
+                          </>
+                        ) : (
+                          <>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                              <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                              <path d="M2 17l10 5 10-5" />
+                              <path d="M2 12l10 5 10-5" />
+                            </svg>
+                            AI Generate
+                          </>
+                        )}
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -498,14 +547,14 @@ function WardrobeView() {
               <button
                 className="flex-1 rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed"
                 onClick={resetEditModal}
-                disabled={savingEditItem}
+                disabled={savingEditItem || generatingThumbnail}
               >
                 Cancel
               </button>
               <button
                 className="flex-1 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:from-gray-300 disabled:to-gray-300 disabled:shadow-none disabled:translate-y-0"
                 onClick={handleSaveEditItem}
-                disabled={savingEditItem || !editItemName.trim()}
+                disabled={savingEditItem || generatingThumbnail || !editItemName.trim()}
               >
                 {savingEditItem ? 'Saving...' : 'Save Changes'}
               </button>
