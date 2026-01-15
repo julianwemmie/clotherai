@@ -118,6 +118,17 @@ export const updateThumbnail = async (
   return response.data;
 };
 
+/**
+ * Generate an AI-powered product thumbnail for an item.
+ * Returns base64 image data for preview.
+ */
+export const generateThumbnail = async (
+  itemId: string
+): Promise<{ success: boolean; image_data: string }> => {
+  const response = await api.post(`/api/items/${itemId}/generate-thumbnail`);
+  return response.data;
+};
+
 export const segmentImage = async (imageData: string): Promise<SegmentedItem[]> => {
   const response = await api.post('/api/segment', { image_data: imageData });
   return response.data.items;

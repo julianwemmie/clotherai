@@ -64,6 +64,8 @@ async def startup_event():
         logger.warning("HF_TOKEN not set - clothing segmentation will not be available")
     if not os.getenv('JINA_API_KEY'):
         logger.warning("JINA_API_KEY not set - image embeddings will not be available")
+    if not os.getenv('REPLICATE_API_TOKEN'):
+        logger.warning("REPLICATE_API_TOKEN not set - AI thumbnail generation will not be available")
 
 
 @app.get("/")

@@ -20,21 +20,9 @@ The app uses a "cold-start" approach - no need to catalog your entire wardrobe u
 - **Database**: SQLite + sqlite-vec extension for vector similarity search
 - **Embeddings**: Jina AI Embeddings v4 API (2048-dimensional vectors)
 - **Clothing Segmentation**: HuggingFace SegFormer B3 Clothes model (automatic item detection)
+- **Thumbnail Generation**: Replicate API (AI product-style thumbnails)
 - **Image Storage**: Local filesystem
 - **Package Management**: uv for Python dependencies
-
-## Project Structure
-
-```
-ClotherAI/
-├── frontend/          # React TypeScript app
-├── backend/           # Python FastAPI server
-├── data/              # SQLite database and uploaded images
-│   └── images/        # Organized by item_id
-├── plan.md            # Detailed implementation plan
-├── PROGRESS.md        # Development progress tracking
-└── README.md          # This file
-```
 
 ## Database Schema
 
@@ -61,9 +49,10 @@ ClotherAI/
 - Threshold-based new item detection
 
 ### 3. Wardrobe Management
-- View all items in a grid with AI-generated flat thumbnails
+- View all items in a grid with AI-generated product-style thumbnails
 - Track wear frequency and last worn dates
 - Sort by most/least worn, recently worn, or date added
+- Generate a fresh AI thumbnail from the latest reference image and preview before saving
 - Color-coded indicators:
   - 🟢 Green: Worn in last 30 days
   - 🟡 Yellow: Worn 30-90 days ago
@@ -110,6 +99,7 @@ The project is divided into 4 development stages:
 - uv package manager
 - Jina AI API key (for embeddings)
 - HuggingFace API token (for clothing segmentation)
+- Replicate API token (for AI thumbnail generation)
 
 ## Environment Configuration
 
@@ -117,6 +107,7 @@ Required environment variables (backend):
 - `JINA_API_KEY` - Your Jina AI API key for generating embeddings
 - `JINA_MODEL` - Jina model to use (default: `jina-embeddings-v4`)
 - `HF_TOKEN` - Your HuggingFace API token for clothing segmentation
+- `REPLICATE_API_TOKEN` - Your Replicate API token for AI thumbnail generation
 - `DATABASE_PATH` - Path to SQLite database file (default: `../data/clotherai.db`)
 - `IMAGES_PATH` - Path to image storage directory (default: `../data/images`)
 - `TEMP_PATH` - Path for temporary file storage (default: `../data/temp`)
@@ -137,21 +128,6 @@ npm run dev
 # App runs on http://localhost:5173
 ```
 
-## Success Criteria
-
-- ✅ User can upload outfit photos
-- ✅ User can automatically detect clothing items or manually crop them
-- ✅ System generates embeddings via Jina AI with retry logic for reliability
-- ✅ System matches crops against wardrobe with de-duplication
-- ✅ User can confirm matches or create new items
-- ✅ Wear frequency tracking works correctly
-- ✅ Wardrobe view displays items with AI thumbnails and stats
-- ✅ Cold-start experience is smooth (no upfront cataloging needed)
-- ✅ Automatic clothing segmentation works reliably
-
-## Future Enhancements
 ## Documentation
 
-See [plan.md](plan.md) for the complete implementation plan with detailed technical specifications.
-
-See [PROGRESS.md](PROGRESS.md) for current development status.
+See [CLAUDE.md](CLAUDE.md) for local agent workflow notes and testing setup.

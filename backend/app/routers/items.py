@@ -7,6 +7,7 @@ import base64
 import os
 import shutil
 from datetime import datetime, date, timezone
+from starlette.concurrency import run_in_threadpool
 
 from ..models import (
     ClothingItem, CreateItemRequest, LogWearRequest,
@@ -15,6 +16,10 @@ from ..models import (
 from ..database import get_db_connection
 from ..services.embedding import generate_embedding_from_base64
 from ..services.matching import find_similar_items, store_embedding
+from ..services.gemini import generate_product_thumbnail
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api", tags=["items"])
 
@@ -395,6 +400,51 @@ async def update_thumbnail(item_id: str, request: UpdateThumbnailRequest) -> dic
     conn.close()
 
     return {"success": True, "thumbnail_path": new_thumbnail_path}
+
+
+@router.post("/items/{item_id}/generate-thumbnail")
+async def generate_item_thumbnail(item_id: str) -> dict:
+    """
+    Generate an AI-powered product-style thumbnail from the most recent reference image.
+    Returns base64 image data for preview (user must save explicitly).
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Verify item exists
+    cursor.execute("SELECT item_id FROM clothing_items WHERE item_id = ?", (item_id,))
+    if not cursor.fetchone():
+        conn.close()
+        raise HTTPException(status_code=404, detail="Item not found")
+
+    # Get most recent reference image
+    cursor.execute(
+        "SELECT image_path FROM item_images WHERE item_id = ? ORDER BY uploaded_at DESC LIMIT 1",
+        (item_id,)
+    )
+    row = cursor.fetchone()
+    conn.close()
+
+    if not row:
+        raise HTTPException(status_code=404, detail="No reference image found. Please add a reference image first.")
+
+    # Verify image file exists
+    image_path = Path(row['image_path'])
+    base_path = Path(IMAGES_PATH).resolve()
+    if not is_path_safe(image_path, base_path):
+        raise HTTPException(status_code=400, detail="Invalid image path")
+    if not image_path.exists():
+        raise HTTPException(status_code=404, detail="Image file not found")
+
+    # Generate thumbnail using Replicate
+    try:
+        generated_thumbnail = await run_in_threadpool(generate_product_thumbnail, str(image_path))
+        return {"success": True, "image_data": generated_thumbnail}
+    except ValueError as e:
+        raise HTTPException(status_code=503, detail=str(e))  # REPLICATE_API_TOKEN not set
+    except Exception as e:
+        logger.error(f"Replicate thumbnail generation failed: {e}")
+        raise HTTPException(status_code=500, detail="Failed to generate thumbnail. Please try again.")
 
 
 @router.delete("/items/{item_id}")
